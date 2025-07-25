@@ -1,0 +1,51 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "com.example.jala_form"
+    compileSdk = 35  // Explicitly set to 35 for latest features
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11  // Updated to Java 11
+        targetCompatibility = JavaVersion.VERSION_11
+        coreLibraryDesugaringEnabled = true  // Enable desugaring for modern features
+    }
+
+    kotlinOptions {
+        jvmTarget = "11"  // Updated to match Java 11
+    }
+
+    defaultConfig {
+        applicationId = "com.example.jala_form"
+        minSdk = 29  // Android 10 (API level 29) - same as Jala app
+        targetSdk = 35  // Latest target SDK
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+        // Note: multiDexEnabled not needed for Android 10+ but keeping for compatibility
+        multiDexEnabled = true
+    }
+
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    // Add desugaring library for modern Java features
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    // MultiDex support (optional for Android 10+ but good for compatibility)
+    implementation 'androidx.multidex:multidex:2.0.1'
+}
