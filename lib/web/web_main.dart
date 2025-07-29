@@ -264,7 +264,7 @@ class WebApp extends StatelessWidget {
         ),
         useMaterial3: true,
         fontFamily: 'NotoSansArabic',
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),

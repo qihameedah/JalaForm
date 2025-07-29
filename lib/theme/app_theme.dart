@@ -53,7 +53,7 @@ class AppTheme {
       tertiary: accentColor,
     ),
     scaffoldBackgroundColor: backgroundColor,
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: cardColor,
       elevation: 0,
     ),
@@ -108,7 +108,7 @@ class AppTheme {
       foregroundColor: Colors.white,
       shape: const RoundedRectangleBorder(),
     ),
-    dialogTheme: DialogTheme(
+    dialogTheme: DialogThemeData(
       elevation: 5,
     ),
     snackBarTheme: SnackBarThemeData(

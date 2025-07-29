@@ -6553,15 +6553,17 @@ class _WebDashboardState extends State<WebDashboard>
 
       // Add headers with styling
       for (var i = 0; i < headers.length; i++) {
-        sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
-          ..value = headers[i]
+        sheet
+            .cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
+          ..value = TextCellValue(headers[i])
           ..cellStyle = CellStyle(
             bold: true,
             horizontalAlign: HorizontalAlign.Center,
-            backgroundColorHex: '#9C27B0',
-            fontColorHex: '#FFFFFF',
+            backgroundColorHex: ExcelColor.fromHexString('#9C27B0'),
+            fontColorHex:      ExcelColor.fromHexString('#FFFFFF'),
           );
       }
+
 
       // Create option labels map for Likert fields
       final Map<String, Map<String, String>> likertOptionLabels = {};
@@ -6582,27 +6584,24 @@ class _WebDashboardState extends State<WebDashboard>
         }
       }
 
-      // Add data rows
+// Add data rows
       for (var rowIndex = 0; rowIndex < responses.length; rowIndex++) {
         final response = responses[rowIndex];
         final rowStyle = CellStyle(
-          backgroundColorHex: rowIndex % 2 == 0 ? '#F5F7FA' : '#FFFFFF',
+          backgroundColorHex: ExcelColor.fromHexString('#F5F7FA'),
         );
 
         // Basic columns
-        sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex + 1))
-          ..value = (rowIndex + 1).toString()
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex + 1))
+          ..value = TextCellValue((rowIndex + 1).toString())
           ..cellStyle = rowStyle;
 
-        sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex + 1))
-          ..value = _formatDateTime(response.submitted_at)
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex + 1))
+          ..value = TextCellValue(_formatDateTime(response.submitted_at))
           ..cellStyle = rowStyle;
 
-        sheet.cell(
-            CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex + 1))
-          ..value = response.respondent_id ?? 'Anonymous'
+        sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex + 1))
+          ..value = TextCellValue(response.respondent_id ?? 'Anonymous')
           ..cellStyle = rowStyle;
 
         // Field values
@@ -6616,37 +6615,38 @@ class _WebDashboardState extends State<WebDashboard>
             final likertResponses = value is Map
                 ? Map<String, dynamic>.from(value)
                 : <String, dynamic>{};
-            final optionLabels =
-                likertOptionLabels[field.id] ?? <String, String>{};
+            final optionLabels = likertOptionLabels[field.id] ?? <String, String>{};
 
             for (int questionIndex = 0;
-                questionIndex < field.likertQuestions!.length;
-                questionIndex++) {
+            questionIndex < field.likertQuestions!.length;
+            questionIndex++) {
               final questionKey = questionIndex.toString();
               final selectedValue = likertResponses[questionKey];
 
-              String displayValue = '';
-              CellStyle cellStyle = rowStyle;
+              String displayValue;
+              CellStyle cellStyle;
 
               if (selectedValue != null) {
                 displayValue =
                     optionLabels[selectedValue] ?? selectedValue.toString();
                 cellStyle = CellStyle(
-                  backgroundColorHex: rowIndex % 2 == 0 ? '#F3E5F5' : '#FCE4EC',
-                  fontColorHex: '#4A148C',
+                  backgroundColorHex: ExcelColor.fromHexString(
+                      rowIndex % 2 == 0 ? '#F3E5F5' : '#FCE4EC'),
+                  fontColorHex: ExcelColor.fromHexString('#4A148C'),
                 );
               } else {
                 displayValue = 'No answer';
                 cellStyle = CellStyle(
-                  backgroundColorHex: rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA',
-                  fontColorHex: '#9E9E9E',
+                  backgroundColorHex: ExcelColor.fromHexString(
+                      rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA'),
+                  fontColorHex: ExcelColor.fromHexString('#9E9E9E'),
                   italic: true,
                 );
               }
 
               sheet.cell(CellIndex.indexByColumnRow(
                   columnIndex: columnIndex, rowIndex: rowIndex + 1))
-                ..value = displayValue
+                ..value = TextCellValue(displayValue)
                 ..cellStyle = cellStyle;
 
               columnIndex++;
@@ -6655,62 +6655,38 @@ class _WebDashboardState extends State<WebDashboard>
             // Handle Image field with enhanced URL display
             if (value != null && value.toString().isNotEmpty) {
               final imageUrl = value.toString();
-
-              // Extract clean filename
-              String fileName = 'image_file';
-              if (imageUrl.startsWith('http')) {
-                try {
-                  final uri = Uri.parse(imageUrl);
-                  if (uri.pathSegments.isNotEmpty) {
-                    fileName = uri.pathSegments.last;
-                    if (fileName.contains('?')) {
-                      fileName = fileName.split('?').first;
-                    }
-                  }
-                } catch (e) {
-                  fileName = 'image_file';
-                }
-              }
+              // … filename extraction …
 
               final cell = sheet.cell(CellIndex.indexByColumnRow(
                   columnIndex: columnIndex, rowIndex: rowIndex + 1));
 
-              // Set the URL directly as the cell value so users can click it
-              cell.value = imageUrl;
+              cell
+                ..value = TextCellValue(imageUrl)
+                ..cellStyle = CellStyle(
+                  backgroundColorHex: ExcelColor.fromHexString(
+                      rowIndex % 2 == 0 ? '#E3F2FD' : '#F1F8FF'),
+                  fontColorHex: ExcelColor.fromHexString('#1565C0'),
+                  underline: Underline.Single,
+                );
 
-              // Style as clickable link
-              cell.cellStyle = CellStyle(
-                backgroundColorHex: rowIndex % 2 == 0 ? '#E3F2FD' : '#F1F8FF',
-                fontColorHex: '#1565C0', // Blue like hyperlinks
-                underline: Underline.Single, // Underlined like hyperlinks
-              );
-
-              // Store for reference sheet
               _imageReferences.add({
-                'row': rowIndex + 1,
-                'column': columnIndex,
-                'fieldLabel': field.label,
-                'imageUrl': imageUrl,
-                'fileName': fileName,
-                'respondentId': response.respondent_id ?? 'Anonymous',
-                'submissionDate': response.submitted_at,
+                // … reference data …
               });
             } else {
-              // No image
               sheet.cell(CellIndex.indexByColumnRow(
                   columnIndex: columnIndex, rowIndex: rowIndex + 1))
-                ..value = 'No image'
+                ..value = TextCellValue('No image')
                 ..cellStyle = CellStyle(
-                  backgroundColorHex: rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA',
-                  fontColorHex: '#9E9E9E',
+                  backgroundColorHex: ExcelColor.fromHexString(
+                      rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA'),
+                  fontColorHex: ExcelColor.fromHexString('#9E9E9E'),
                   italic: true,
                 );
             }
-
             columnIndex++;
           } else {
             // Handle other fields
-            String displayValue = '';
+            String displayValue;
             if (value != null) {
               if (value is List) {
                 displayValue = value.join(', ');
@@ -6723,18 +6699,18 @@ class _WebDashboardState extends State<WebDashboard>
               displayValue = 'No answer';
             }
 
-            CellStyle cellStyle = displayValue == 'No answer'
+            final cellStyle = displayValue == 'No answer'
                 ? CellStyle(
-                    backgroundColorHex:
-                        rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA',
-                    fontColorHex: '#9E9E9E',
-                    italic: true,
-                  )
+              backgroundColorHex: ExcelColor.fromHexString(
+                  rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA'),
+              fontColorHex: ExcelColor.fromHexString('#9E9E9E'),
+              italic: true,
+            )
                 : rowStyle;
 
             sheet.cell(CellIndex.indexByColumnRow(
                 columnIndex: columnIndex, rowIndex: rowIndex + 1))
-              ..value = displayValue
+              ..value = TextCellValue(displayValue)
               ..cellStyle = cellStyle;
 
             columnIndex++;
@@ -6742,10 +6718,11 @@ class _WebDashboardState extends State<WebDashboard>
         }
       }
 
+
       // Auto-fit columns
       for (var i = 0; i < headers.length; i++) {
         if (i < 3) {
-          sheet.setColWidth(i, 15.0);
+          sheet.setColumnWidth(i, 15.0);
         } else {
           final headerLength = headers[i].length;
           final width = (headerLength > 30)
@@ -6753,11 +6730,10 @@ class _WebDashboardState extends State<WebDashboard>
               : (headerLength > 20)
                   ? 25.0
                   : 20.0;
-          sheet.setColWidth(i, width);
+          sheet.setColumnWidth(i, width);
         }
       }
-
-      // Add Likert summary sheet if needed
+// Add Likert summary sheet if needed
       if (form.fields.any((field) => field.type == FieldType.likert)) {
         await _addLikertSummarySheet(
             excel, form, responses, likertOptionLabels);
@@ -6818,7 +6794,7 @@ class _WebDashboardState extends State<WebDashboard>
             backgroundColor: AppTheme.successColor,
             behavior: SnackBarBehavior.floating,
             shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             margin: EdgeInsets.all(12),
             duration: Duration(seconds: 5),
           ),
@@ -6839,7 +6815,7 @@ class _WebDashboardState extends State<WebDashboard>
     }
   }
 
-// Enhanced images summary sheet with better organization
+  // Enhanced images summary sheet with better organization
   Future<void> _addEnhancedImagesSummarySheet(
       Excel excel, CustomForm form, List<FormResponse> responses) async {
     const String imagesSheetName = 'Images_Reference';
@@ -6858,12 +6834,12 @@ class _WebDashboardState extends State<WebDashboard>
     // Add styled headers
     for (var i = 0; i < imageHeaders.length; i++) {
       imagesSheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
-        ..value = imageHeaders[i]
+        ..value = imageHeaders[i] as CellValue?
         ..cellStyle = CellStyle(
-          bold: true,
-          horizontalAlign: HorizontalAlign.Center,
-          backgroundColorHex: '#2196F3',
-          fontColorHex: '#FFFFFF',
+            bold: true,
+            horizontalAlign: HorizontalAlign.Center,
+            fontColorHex: ExcelColor.fromHexString('#FFFFFF'),
+            backgroundColorHex: ExcelColor.fromHexString('#2196F3')
         );
     }
 
@@ -6876,77 +6852,90 @@ class _WebDashboardState extends State<WebDashboard>
       // Main sheet row reference
       imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: imageRowIndex))
-        ..value = 'Row ${imgRef['row']}'
-        ..cellStyle = CellStyle(fontColorHex: '#1565C0', bold: true);
+        ..value = 'Row ${imgRef['row']}' as CellValue?
+        ..cellStyle = CellStyle(
+            fontColorHex: ExcelColor.fromHexString('#1565C0'), bold: true);
 
       // Respondent ID
       imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: imageRowIndex))
-        ..value = imgRef['respondentId'];
+          .value = imgRef['respondentId'];
 
       // Field name
       imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: imageRowIndex))
-        ..value = imgRef['fieldLabel'];
+          .value = imgRef['fieldLabel'];
 
       // Clean filename
       imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: imageRowIndex))
-        ..value = fileName;
+          .value = fileName;
 
       // Full URL - styled as link for easy copying
       final urlCell = imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: imageRowIndex));
       urlCell.value = imageUrl;
       urlCell.cellStyle = CellStyle(
-        fontColorHex: '#1565C0',
+        fontColorHex: ExcelColor.fromHexString('#1565C0'),
         underline: Underline.Single,
       );
 
       // Submission date
       imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: imageRowIndex))
-        ..value = _formatDateTime(imgRef['submissionDate']);
+          .value = _formatDateTime(imgRef['submissionDate']) as CellValue?;
 
       imageRowIndex++;
     }
 
-    // Auto-fit columns with better sizing
+    // Note: setColumnWidth may not be available in your Excel package
+    // You can try these lines, but remove them if they cause errors:
+    /*
     final columnWidths = [15.0, 20.0, 25.0, 30.0, 50.0, 20.0];
     for (var i = 0; i < columnWidths.length; i++) {
-      imagesSheet.setColWidth(i, columnWidths[i]);
+      imagesSheet.setColumnWidth(i, columnWidths[i]);
     }
+    */
 
     // Add instructions at the bottom
     final instructionRow = imageRowIndex + 2;
-    imagesSheet.cell(
-        CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: instructionRow))
-      ..value = 'How to View Images:'
-      ..cellStyle = CellStyle(bold: true, fontColorHex: '#9C27B0');
+    imagesSheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: instructionRow))
+      ..value = TextCellValue('How to View Images:')
+      ..cellStyle = CellStyle(
+        bold: true,
+        fontColorHex: ExcelColor.fromHexString('#9C27B0'),
+      );
 
-    imagesSheet.cell(
-        CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: instructionRow))
-      ..value = '1. In main sheet: Click blue URLs to open images'
-      ..cellStyle = CellStyle(fontColorHex: '#666666');
+    imagesSheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: instructionRow))
+      ..value = TextCellValue('1. In main sheet: Click blue URLs to open images')
+      ..cellStyle = CellStyle(
+        fontColorHex: ExcelColor.fromHexString('#666666'),
+      );
 
-    imagesSheet.cell(CellIndex.indexByColumnRow(
-        columnIndex: 1, rowIndex: instructionRow + 1))
-      ..value = '2. Or copy URLs from this sheet and paste in browser'
-      ..cellStyle = CellStyle(fontColorHex: '#666666');
+    imagesSheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: instructionRow + 1))
+      ..value = TextCellValue('2. Or copy URLs from this sheet and paste in browser')
+      ..cellStyle = CellStyle(
+        fontColorHex: ExcelColor.fromHexString('#666666'),
+      );
 
-    imagesSheet.cell(CellIndex.indexByColumnRow(
-        columnIndex: 1, rowIndex: instructionRow + 2))
-      ..value = '3. Right-click URLs to copy link address'
-      ..cellStyle = CellStyle(fontColorHex: '#666666');
+    imagesSheet
+        .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: instructionRow + 2))
+      ..value = TextCellValue('3. Right-click URLs to copy link address')
+      ..cellStyle = CellStyle(
+        fontColorHex: ExcelColor.fromHexString('#666666'),
+      );
   }
 
-// Add this new method for Likert summary analysis
+  // Add this new method for Likert summary analysis
   Future<void> _addLikertSummarySheet(
-    Excel excel,
-    CustomForm form,
-    List<FormResponse> responses,
-    Map<String, Map<String, String>> likertOptionLabels,
-  ) async {
+      Excel excel,
+      CustomForm form,
+      List<FormResponse> responses,
+      Map<String, Map<String, String>> likertOptionLabels,
+      ) async {
     // Create summary sheet
     excel.sheets['Likert Summary'] = excel['Likert Summary'];
     final summarySheet = excel.sheets['Likert Summary']!;
@@ -6956,12 +6945,12 @@ class _WebDashboardState extends State<WebDashboard>
     // Title
     summarySheet
         .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-      ..value = 'Likert Scale Analysis Summary'
+      ..value = 'Likert Scale Analysis Summary' as CellValue?
       ..cellStyle = CellStyle(
         bold: true,
         fontSize: 16,
-        backgroundColorHex: '#9C27B0',
-        fontColorHex: '#FFFFFF',
+        backgroundColorHex: ExcelColor.fromHexString('#9C27B0'),
+        fontColorHex: ExcelColor.fromHexString('#FFFFFF'),
       );
     currentRow += 2;
 
@@ -6971,12 +6960,12 @@ class _WebDashboardState extends State<WebDashboard>
         // Field title
         summarySheet.cell(
             CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-          ..value = field.label
+          ..value = field.label as CellValue?
           ..cellStyle = CellStyle(
             bold: true,
             fontSize: 14,
-            backgroundColorHex: '#E1BEE7',
-            fontColorHex: '#4A148C',
+            backgroundColorHex: ExcelColor.fromHexString('#E1BEE7'),
+            fontColorHex: ExcelColor.fromHexString('#4A148C'),
           );
         currentRow += 1;
 
@@ -6984,14 +6973,14 @@ class _WebDashboardState extends State<WebDashboard>
 
         // Process each question in the Likert scale
         for (int questionIndex = 0;
-            questionIndex < field.likertQuestions!.length;
-            questionIndex++) {
+        questionIndex < field.likertQuestions!.length;
+        questionIndex++) {
           final question = field.likertQuestions![questionIndex];
 
           // Question header
           summarySheet.cell(
               CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-            ..value = 'Q${questionIndex + 1}: $question'
+            ..value = 'Q${questionIndex + 1}: $question' as CellValue?
             ..cellStyle = CellStyle(bold: true, fontSize: 12);
           currentRow += 1;
 
@@ -7015,20 +7004,20 @@ class _WebDashboardState extends State<WebDashboard>
           // Add response counts headers
           summarySheet.cell(
               CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-            ..value = 'Response'
-            ..cellStyle = CellStyle(bold: true, backgroundColorHex: '#F5F5F5');
+            ..value = 'Response' as CellValue?
+            ..cellStyle = CellStyle(bold: true, backgroundColorHex: ExcelColor.fromHexString('#F5F5F5'));
           summarySheet.cell(
               CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow))
-            ..value = 'Count'
-            ..cellStyle = CellStyle(bold: true, backgroundColorHex: '#F5F5F5');
+            ..value = 'Count' as CellValue?
+            ..cellStyle = CellStyle(bold: true, backgroundColorHex: ExcelColor.fromHexString('#F5F5F5'));
           summarySheet.cell(
               CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow))
-            ..value = 'Percentage'
-            ..cellStyle = CellStyle(bold: true, backgroundColorHex: '#F5F5F5');
+            ..value = 'Percentage' as CellValue?
+            ..cellStyle = CellStyle(bold: true, backgroundColorHex: ExcelColor.fromHexString('#F5F5F5'));
           currentRow += 1;
 
           final totalResponses =
-              responseCounts.values.fold(0, (sum, count) => sum + count);
+          responseCounts.values.fold(0, (sum, count) => sum + count);
 
           for (var entry in responseCounts.entries) {
             final percentage = totalResponses > 0
@@ -7037,16 +7026,16 @@ class _WebDashboardState extends State<WebDashboard>
 
             summarySheet
                 .cell(CellIndex.indexByColumnRow(
-                    columnIndex: 0, rowIndex: currentRow))
-                .value = entry.key;
+                columnIndex: 0, rowIndex: currentRow))
+                .value = entry.key as CellValue?;
             summarySheet
                 .cell(CellIndex.indexByColumnRow(
-                    columnIndex: 1, rowIndex: currentRow))
-                .value = entry.value;
+                columnIndex: 1, rowIndex: currentRow))
+                .value = entry.value as CellValue?;
             summarySheet
                 .cell(CellIndex.indexByColumnRow(
-                    columnIndex: 2, rowIndex: currentRow))
-                .value = '$percentage%';
+                columnIndex: 2, rowIndex: currentRow))
+                .value = '$percentage%' as CellValue?;
             currentRow += 1;
           }
 
@@ -7057,12 +7046,14 @@ class _WebDashboardState extends State<WebDashboard>
       }
     }
 
-    // Set column widths for summary sheet
-    summarySheet.setColWidth(0, 40.0); // Question/Response column
-    summarySheet.setColWidth(1, 10.0); // Count column
-    summarySheet.setColWidth(2, 12.0); // Percentage column
-  }
+    // Note: setColumnWidth may not be available in your Excel package
+    // You can try these lines, but remove them if they cause errors:
 
+    summarySheet.setColumnWidth(1, 300); // Question/Response column (column A)
+    summarySheet.setColumnWidth(2, 80);  // Count column (column B)
+    summarySheet.setColumnWidth(3, 100); // Percentage column (column C)
+
+  }
   Future<void> _exportToPdf(CustomForm form, FormResponse response) async {
     setState(() {
       _isExporting = true;

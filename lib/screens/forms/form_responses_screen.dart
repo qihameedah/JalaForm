@@ -263,7 +263,7 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
   }
 
 // Add this as a class variable at the top of your widget class
-  List<Map<String, dynamic>> _imageReferences = [];
+  final List<Map<String, dynamic>> _imageReferences = [];
 
   Future<void> _exportAllResponsesToExcel() async {
     if (_form == null || _responses.isEmpty) {
@@ -308,12 +308,14 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
       // Add the headers to the first row
       for (var i = 0; i < headers.length; i++) {
         sheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
-          ..value = headers[i]
+          ..value = headers[i] as CellValue?
           ..cellStyle = CellStyle(
             bold: true,
             horizontalAlign: HorizontalAlign.Center,
-            backgroundColorHex: '#9C27B0', // Purple for Likert-enhanced export
-            fontColorHex: '#FFFFFF',
+
+            backgroundColorHex: ExcelColor.fromHexString('#9C27B0'),
+            fontColorHex: ExcelColor.fromHexString('#FFFFFF')
+
           );
       }
 
@@ -340,26 +342,28 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
       for (var rowIndex = 0; rowIndex < _responses.length; rowIndex++) {
         final response = _responses[rowIndex];
         final rowStyle = CellStyle(
-          backgroundColorHex: rowIndex % 2 == 0 ? '#F5F7FA' : '#FFFFFF',
+
+          backgroundColorHex: ExcelColor.fromHexString(rowIndex % 2 == 0 ? '#F5F7FA' : '#FFFFFF')
+
         );
 
         // Row number
         sheet
             .cell(CellIndex.indexByColumnRow(
                 columnIndex: 0, rowIndex: rowIndex + 1))
-            .value = (rowIndex + 1).toString();
+            .value = (rowIndex + 1).toString() as CellValue?;
 
         // Submission date
         sheet
             .cell(CellIndex.indexByColumnRow(
                 columnIndex: 1, rowIndex: rowIndex + 1))
-            .value = _formatDate(response.submitted_at);
+            .value = _formatDate(response.submitted_at) as CellValue?;
 
         // Respondent ID
         sheet
             .cell(CellIndex.indexByColumnRow(
                 columnIndex: 2, rowIndex: rowIndex + 1))
-            .value = response.respondent_id ?? 'Anonymous';
+            .value = (response.respondent_id ?? 'Anonymous') as CellValue?;
 
         // Apply style to basic columns
         for (var i = 0; i < 3; i++) {
@@ -408,21 +412,25 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
                 }
 
                 cellStyle = CellStyle(
-                  backgroundColorHex: backgroundColor,
-                  fontColorHex: '#4A148C', // Dark purple for Likert answers
+
+
+                  backgroundColorHex: ExcelColor.fromHexString(backgroundColor),
+                  fontColorHex: ExcelColor.fromHexString('#4A148C')
+
                 );
               } else {
                 displayValue = 'No answer';
                 cellStyle = CellStyle(
-                  backgroundColorHex: rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA',
-                  fontColorHex: '#9E9E9E',
+
+                  backgroundColorHex: ExcelColor.fromHexString(rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA'),
+                  fontColorHex: ExcelColor.fromHexString('#9E9E9E'),
                   italic: true,
                 );
               }
 
               final cell = sheet.cell(CellIndex.indexByColumnRow(
                   columnIndex: columnIndex, rowIndex: rowIndex + 1));
-              cell.value = displayValue;
+              cell.value = displayValue as CellValue?;
               cell.cellStyle = cellStyle;
 
               columnIndex++;
@@ -452,12 +460,14 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
                   columnIndex: columnIndex, rowIndex: rowIndex + 1));
 
               // Set the URL directly as the cell value so users can click it
-              cell.value = imageUrl;
+              cell.value = imageUrl as CellValue?;
 
               // Style as clickable link
               cell.cellStyle = CellStyle(
-                backgroundColorHex: rowIndex % 2 == 0 ? '#E3F2FD' : '#F1F8FF',
-                fontColorHex: '#1565C0', // Blue like hyperlinks
+
+                backgroundColorHex: ExcelColor.fromHexString(rowIndex % 2 == 0 ? '#E3F2FD' : '#F1F8FF'),
+                fontColorHex: ExcelColor.fromHexString('#1565C0'),
+
                 underline: Underline.Single, // Underlined like hyperlinks
               );
 
@@ -475,10 +485,12 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
               // No image
               sheet.cell(CellIndex.indexByColumnRow(
                   columnIndex: columnIndex, rowIndex: rowIndex + 1))
-                ..value = 'No image'
+                ..value = 'No image' as CellValue?
                 ..cellStyle = CellStyle(
-                  backgroundColorHex: rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA',
-                  fontColorHex: '#9E9E9E',
+
+                  backgroundColorHex: ExcelColor.fromHexString(rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA'),
+                  fontColorHex: ExcelColor.fromHexString('#9E9E9E'),
+
                   italic: true,
                 );
             }
@@ -502,15 +514,17 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
             } else {
               displayValue = 'No answer';
               cellStyle = CellStyle(
-                backgroundColorHex: rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA',
-                fontColorHex: '#9E9E9E',
+
+                backgroundColorHex: ExcelColor.fromHexString(rowIndex % 2 == 0 ? '#F5F5F5' : '#FAFAFA'),
+                fontColorHex: ExcelColor.fromHexString('#9E9E9E'),
+
                 italic: true,
               );
             }
 
             final cell = sheet.cell(CellIndex.indexByColumnRow(
                 columnIndex: columnIndex, rowIndex: rowIndex + 1));
-            cell.value = displayValue;
+            cell.value = displayValue as CellValue?;
             cell.cellStyle = cellStyle;
 
             columnIndex++;
@@ -523,7 +537,7 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
       for (var i = 0; i < headers.length; i++) {
         if (i < 3) {
           // Basic columns
-          sheet.setColWidth(i, 15.0); // Changed from 15 to 15.0
+          sheet.setColumnWidth(i, 15.0); // Changed from 15 to 15.0
         } else {
           // Field columns - adjust based on header length
           final headerLength = headers[i].length;
@@ -532,7 +546,7 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
               : (headerLength > 20)
                   ? 25.0
                   : 20.0; // Changed to double values
-          sheet.setColWidth(i, width);
+          sheet.setColumnWidth(i, width);
         }
       }
 
@@ -633,12 +647,14 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
     // Add styled headers
     for (var i = 0; i < imageHeaders.length; i++) {
       imagesSheet.cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
-        ..value = imageHeaders[i]
+        ..value = imageHeaders[i] as CellValue?
         ..cellStyle = CellStyle(
           bold: true,
           horizontalAlign: HorizontalAlign.Center,
-          backgroundColorHex: '#2196F3',
-          fontColorHex: '#FFFFFF',
+
+          backgroundColorHex: ExcelColor.fromHexString('#2196F3'),
+          fontColorHex: ExcelColor.fromHexString('#FFFFFF')
+
         );
     }
 
@@ -651,38 +667,40 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
       // Main sheet row reference
       imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: imageRowIndex))
-        ..value = 'Row ${imgRef['row']}'
-        ..cellStyle = CellStyle(fontColorHex: '#1565C0', bold: true);
+        ..value = 'Row ${imgRef['row']}' as CellValue?
+        ..cellStyle = CellStyle(fontColorHex: ExcelColor.fromHexString('#1565C0')
+            , bold: true);
 
       // Respondent ID
       imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: imageRowIndex))
-        ..value = imgRef['respondentId'];
+        .value = imgRef['respondentId'];
 
       // Field name
       imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: imageRowIndex))
-        ..value = imgRef['fieldLabel'];
+        .value = imgRef['fieldLabel'];
 
       // Clean filename
       imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: imageRowIndex))
-        ..value = fileName;
+        .value = fileName;
 
       // Full URL - styled as link for easy copying
       final urlCell = imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: imageRowIndex));
       urlCell.value = imageUrl;
       urlCell.cellStyle = CellStyle(
-        fontColorHex: '#1565C0',
+
+        fontColorHex: ExcelColor.fromHexString('#1565C0'),
         underline: Underline.Single,
       );
 
       // Submission date - use the same format as main sheet
       imagesSheet.cell(
           CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: imageRowIndex))
-        ..value = _formatDate(
-            imgRef['submissionDate']); // Use your existing _formatDate method
+        .value = _formatDate(
+            imgRef['submissionDate']) as CellValue?; // Use your existing _formatDate method
 
       imageRowIndex++;
     }
@@ -690,30 +708,31 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
     // Auto-fit columns with better sizing
     final columnWidths = [15.0, 20.0, 25.0, 30.0, 50.0, 20.0];
     for (var i = 0; i < columnWidths.length; i++) {
-      imagesSheet.setColWidth(i, columnWidths[i]);
+      imagesSheet.setColumnWidth(i, columnWidths[i]);
     }
 
     // Add instructions at the bottom
     final instructionRow = imageRowIndex + 2;
     imagesSheet.cell(
         CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: instructionRow))
-      ..value = 'How to View Images:'
-      ..cellStyle = CellStyle(bold: true, fontColorHex: '#9C27B0');
+      ..value = 'How to View Images:' as CellValue?
+      ..cellStyle = CellStyle(fontColorHex: ExcelColor.fromHexString('#9C27B0'));
+
 
     imagesSheet.cell(
         CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: instructionRow))
-      ..value = '1. In main sheet: Click blue URLs to open images'
-      ..cellStyle = CellStyle(fontColorHex: '#666666');
+      ..value = '1. In main sheet: Click blue URLs to open images' as CellValue?
+      ..cellStyle = CellStyle(fontColorHex: ExcelColor.fromHexString('#666666'));
 
     imagesSheet.cell(CellIndex.indexByColumnRow(
         columnIndex: 1, rowIndex: instructionRow + 1))
-      ..value = '2. Or copy URLs from this sheet and paste in browser'
-      ..cellStyle = CellStyle(fontColorHex: '#666666');
+      ..value = '2. Or copy URLs from this sheet and paste in browser' as CellValue?
+      ..cellStyle = CellStyle(fontColorHex: ExcelColor.fromHexString('#666666'));
 
     imagesSheet.cell(CellIndex.indexByColumnRow(
         columnIndex: 1, rowIndex: instructionRow + 2))
-      ..value = '3. Right-click URLs to copy link address'
-      ..cellStyle = CellStyle(fontColorHex: '#666666');
+      ..value = '3. Right-click URLs to copy link address' as CellValue?
+      ..cellStyle = CellStyle(fontColorHex: ExcelColor.fromHexString('#666666'));
   }
 
 // Add this new method for Likert summary analysis
@@ -732,12 +751,12 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
     // Title
     summarySheet
         .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-      ..value = 'Likert Scale Analysis Summary'
+      ..value = 'Likert Scale Analysis Summary' as CellValue?
       ..cellStyle = CellStyle(
         bold: true,
         fontSize: 16,
-        backgroundColorHex: '#9C27B0',
-        fontColorHex: '#FFFFFF',
+        backgroundColorHex: ExcelColor.fromHexString('#9C27B0'),
+        fontColorHex: ExcelColor.fromHexString('#FFFFFF')
       );
     currentRow += 2;
 
@@ -747,12 +766,13 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
         // Field title
         summarySheet.cell(
             CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-          ..value = field.label
+          ..value = field.label as CellValue?
           ..cellStyle = CellStyle(
             bold: true,
             fontSize: 14,
-            backgroundColorHex: '#E1BEE7',
-            fontColorHex: '#4A148C',
+            backgroundColorHex: ExcelColor.fromHexString('#E1BEE7'),
+            fontColorHex: ExcelColor.fromHexString('#4A148C')
+
           );
         currentRow += 1;
 
@@ -767,7 +787,7 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
           // Question header
           summarySheet.cell(
               CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-            ..value = 'Q${questionIndex + 1}: $question'
+            ..value = 'Q${questionIndex + 1}: $question' as CellValue?
             ..cellStyle = CellStyle(bold: true, fontSize: 12);
           currentRow += 1;
 
@@ -792,16 +812,18 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
           var columnIndex = 1;
           summarySheet.cell(
               CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: currentRow))
-            ..value = 'Response'
-            ..cellStyle = CellStyle(bold: true, backgroundColorHex: '#F5F5F5');
-          summarySheet.cell(
+            ..value = 'Response' as CellValue?
+            ..cellStyle = CellStyle(bold: true, backgroundColorHex: ExcelColor.fromHexString('#F5F5F5'));
+
+
+    summarySheet.cell(
               CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: currentRow))
-            ..value = 'Count'
-            ..cellStyle = CellStyle(bold: true, backgroundColorHex: '#F5F5F5');
+            ..value = 'Count' as CellValue?
+      ..cellStyle = CellStyle(bold: true, backgroundColorHex: ExcelColor.fromHexString('#F5F5F5'));
           summarySheet.cell(
               CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: currentRow))
-            ..value = 'Percentage'
-            ..cellStyle = CellStyle(bold: true, backgroundColorHex: '#F5F5F5');
+            ..value = 'Percentage' as CellValue?
+            ..cellStyle = CellStyle(bold: true, backgroundColorHex: ExcelColor.fromHexString('#F5F5F5'));
           currentRow += 1;
 
           final totalResponses =
@@ -815,15 +837,15 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
             summarySheet
                 .cell(CellIndex.indexByColumnRow(
                     columnIndex: 0, rowIndex: currentRow))
-                .value = entry.key;
+                .value = entry.key as CellValue?;
             summarySheet
                 .cell(CellIndex.indexByColumnRow(
                     columnIndex: 1, rowIndex: currentRow))
-                .value = entry.value;
+                .value = entry.value as CellValue?;
             summarySheet
                 .cell(CellIndex.indexByColumnRow(
                     columnIndex: 2, rowIndex: currentRow))
-                .value = '$percentage%';
+                .value = '$percentage%' as CellValue?;
             currentRow += 1;
           }
 
@@ -835,9 +857,9 @@ class _FormResponsesScreenState extends State<FormResponsesScreen> {
     }
 
     // Set column widths for summary sheet
-    summarySheet.setColWidth(0, 40); // Question/Response column
-    summarySheet.setColWidth(1, 10); // Count column
-    summarySheet.setColWidth(2, 12); // Percentage column
+    summarySheet.setColumnWidth(0, 40); // Question/Response column
+    summarySheet.setColumnWidth(1, 10); // Count column
+    summarySheet.setColumnWidth(2, 12); // Percentage column
   }
 
   // Show bottom sheet with Excel options
