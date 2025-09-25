@@ -1,17 +1,29 @@
 # jala_form
 
-A new Flutter project.
+# 14/9/2025:
+Header size hiding the name when in tablet mode - DONE
 
-## Getting Started
+# 15/9/2025:
+No fields section is not centered - DONE
 
-This project is a starting point for a Flutter application.
+# 16/9/2025:
+Unsaved changes appears even after clicking create form or save button - Done
+(Removed the save button in form_builder_screen line 293)
 
-A few resources to get you started if this is your first Flutter project:
+# 18/9/2025:
+Improving logic files and syntax such as:
+- Supabase service.dart
+- main.dart
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+# 19/9/2025:
+Rearranging files, and following Feature-Based structure
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# JalaForm
+# 20/9/2025:
+Entry point approaches for the app
+
+# 25/9/2025:
+Improvements on the form builder screen, files structure and more...
+
+# Upcoming:
+we needs a notifications feature for everything such as assigns and responses
+

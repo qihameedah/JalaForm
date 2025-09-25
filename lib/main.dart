@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:jala_form/features/auth/sign_in/screens/auth_screen.dart';
+import 'package:jala_form/features/home/screens/home_screen.dart';
+import 'package:jala_form/services/supabase_service.dart';
+import 'package:jala_form/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:async';
-import 'services/supabase_service.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -155,7 +155,7 @@ class _InitializationWrapperState extends State<InitializationWrapper> {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              'Retrying connection... (${_retryCount}/$maxRetries)',
+                              'Retrying connection... ($_retryCount/$maxRetries)',
                               style: const TextStyle(fontSize: 16),
                             ),
                           ],
@@ -216,7 +216,7 @@ class _InitializationWrapperState extends State<InitializationWrapper> {
 class AppLifecycleManager extends StatefulWidget {
   final Widget child;
 
-  const AppLifecycleManager({Key? key, required this.child}) : super(key: key);
+  const AppLifecycleManager({super.key, required this.child});
 
   @override
   _AppLifecycleManagerState createState() => _AppLifecycleManagerState();
@@ -276,7 +276,7 @@ class MyApp extends StatelessWidget {
         home: const AuthWrapper(),
         routes: {
           '/home': (context) => const HomeScreen(),
-          '/login': (context) => const LoginScreen(),
+          '/login': (context) => const AuthScreen(),
         },
       ),
     );
@@ -321,7 +321,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     if (user != null) {
       return const HomeScreen();
     } else {
-      return const LoginScreen();
+      return const AuthScreen();
     }
   }
 }
