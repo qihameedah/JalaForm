@@ -49,6 +49,7 @@ dependencies:
   lottie: ^3.3.0
   universal_html: ^2.2.4
 
+  url_launcher: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
