@@ -1,20 +1,6 @@
-/// Model class for Likert scale options
-class LikertOption {
-  final String label;
-  final String value;
+// This file is kept for backward compatibility
+// All Likert models have been moved to shared directory
+// Export them from here to avoid breaking existing imports
 
-  LikertOption({required this.label, required this.value});
-}
-
-/// Model class for Likert display data
-class LikertDisplayData {
-  final List<String> questions;
-  final List<LikertOption> options;
-  final Map<String, String> responses;
-
-  LikertDisplayData({
-    required this.questions,
-    required this.options,
-    required this.responses,
-  });
-}
+export 'package:jala_form/shared/models/likert/likert_option.dart';
+export 'package:jala_form/shared/models/likert/likert_display_data.dart';
