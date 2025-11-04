@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:jala_form/core/theme/app_theme.dart';
 
 class GroupsHeader extends StatefulWidget {
+  final int groupsCount;
   final VoidCallback onCreateGroup;
 
   const GroupsHeader({
     super.key,
+    required this.groupsCount,
     required this.onCreateGroup,
   });
 

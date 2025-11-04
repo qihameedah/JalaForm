@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
 class ResponsesHeader extends StatelessWidget {
-  const ResponsesHeader({super.key});
+  final String? title;
+  final String? subtitle;
+
+  const ResponsesHeader({
+    super.key,
+    this.title,
+    this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +63,7 @@ class ResponsesHeader extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Form Responses',
+                          title ?? 'Form Responses',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -65,7 +72,7 @@ class ResponsesHeader extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Select a form below to view detailed submission data and analytics',
+                          subtitle ?? 'Select a form below to view detailed submission data and analytics',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade600,

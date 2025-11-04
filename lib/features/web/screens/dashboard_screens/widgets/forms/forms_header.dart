@@ -3,14 +3,14 @@ import 'package:jala_form/core/theme/app_theme.dart';
 import 'package:jala_form/features/forms/models/custom_form.dart';
 
 class FormsHeader extends StatelessWidget {
-  final List<CustomForm> filteredForms;
+  final int formsCount;
   final String sortBy;
   final ValueChanged<String?> onSortChanged;
   final VoidCallback onCreateForm;
 
   const FormsHeader({
     super.key,
-    required this.filteredForms,
+    required this.formsCount,
     required this.sortBy,
     required this.onSortChanged,
     required this.onCreateForm,

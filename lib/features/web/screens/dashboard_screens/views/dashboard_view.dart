@@ -140,7 +140,7 @@ class DashboardView extends StatelessWidget {
 
           // Stats cards with animations and responsive layout
           _buildStatsCards(
-              screenWidth, regularFormsCount, checklistsCount, totalResponses),
+              screenWidth.toInt(), regularFormsCount, checklistsCount, totalResponses),
 
           const SizedBox(height: 32),
 
@@ -204,20 +204,23 @@ class DashboardView extends StatelessWidget {
               children: [
                 FilterChipWidget(
                   label: 'All Forms',
-                  isSelected: selectedFormType == 'all',
-                  onSelected: () => onFormTypeChanged('all'),
+                  value: 'all',
+                  selectedValue: selectedFormType,
+                  onSelected: onFormTypeChanged,
                 ),
                 const SizedBox(width: 8),
                 FilterChipWidget(
                   label: 'Regular Forms',
-                  isSelected: selectedFormType == 'forms',
-                  onSelected: () => onFormTypeChanged('forms'),
+                  value: 'forms',
+                  selectedValue: selectedFormType,
+                  onSelected: onFormTypeChanged,
                 ),
                 const SizedBox(width: 8),
                 FilterChipWidget(
                   label: 'Checklists',
-                  isSelected: selectedFormType == 'checklists',
-                  onSelected: () => onFormTypeChanged('checklists'),
+                  value: 'checklists',
+                  selectedValue: selectedFormType,
+                  onSelected: onFormTypeChanged,
                 ),
               ],
             ),
@@ -230,7 +233,6 @@ class DashboardView extends StatelessWidget {
               ? const NoAvailableFormsMessage()
               : AvailableFormsList(
                   forms: _getFilteredForms(),
-                  searchQuery: searchQuery,
                   onOpenFormSubmission: onOpenFormSubmission,
                 ),
         ],

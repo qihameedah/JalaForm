@@ -3,12 +3,24 @@ import 'package:jala_form/core/theme/app_theme.dart';
 
 /// Empty state widget for when no forms exist
 class EmptyState extends StatelessWidget {
-  final VoidCallback onCreateForm;
+  final String title;
+  final String message;
+  final IconData icon;
+  final String actionLabel;
+  final VoidCallback onActionPressed;
+  final VoidCallback? onCreateForm; // Keep for backward compatibility
 
   const EmptyState({
     super.key,
-    required this.onCreateForm,
-  });
+    this.title = 'Welcome to Jala Form Dashboard',
+    this.message = 'Create your first form to get started. You can create regular forms or checklists with time windows and recurrence patterns.',
+    this.icon = Icons.assignment_outlined,
+    this.actionLabel = 'Create Your First Form',
+    VoidCallback? onActionPressed,
+    this.onCreateForm,
+  }) : onActionPressed = onActionPressed ?? onCreateForm ?? _defaultAction;
+
+  static void _defaultAction() {}
 
   @override
   Widget build(BuildContext context) {
@@ -45,14 +57,14 @@ class EmptyState extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.assignment_outlined,
+                  icon,
                   size: isSmallScreen ? 60 : 80,
                   color: AppTheme.primaryColor,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
-                'Welcome to Jala Form Dashboard',
+                title,
                 style: TextStyle(
                   fontSize: isSmallScreen ? 22 : 28,
                   fontWeight: FontWeight.bold,
@@ -62,7 +74,7 @@ class EmptyState extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                'Create your first form to get started. You can create regular forms or checklists with time windows and recurrence patterns.',
+                message,
                 style: TextStyle(
                   fontSize: isSmallScreen ? 16 : 18,
                   color: AppTheme.textSecondaryColor,
@@ -74,8 +86,8 @@ class EmptyState extends StatelessWidget {
                 width: isSmallScreen ? double.infinity : null,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text('Create Your First Form',
-                      style: TextStyle(color: Colors.white)),
+                  label: Text(actionLabel,
+                      style: const TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     foregroundColor: Colors.white,
@@ -92,7 +104,7 @@ class EmptyState extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: onCreateForm,
+                  onPressed: onActionPressed,
                 ),
               ),
             ],
