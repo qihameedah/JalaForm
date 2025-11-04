@@ -1,25 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jala_form/features/forms/models/form_field.dart';
-
-/// Data class for Likert display
-class LikertOption {
-  final String label;
-  final String value;
-
-  LikertOption({required this.label, required this.value});
-}
-
-class LikertDisplayData {
-  final List<String> questions;
-  final List<LikertOption> options;
-  final Map<String, String> responses;
-
-  LikertDisplayData({
-    required this.questions,
-    required this.options,
-    required this.responses,
-  });
-}
+import 'package:jala_form/features/web/models/likert_models.dart';
 
 /// Likert scale response display widget
 /// Shows Likert responses in a formatted table-like view

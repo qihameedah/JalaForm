@@ -73,7 +73,7 @@ class _GroupCardState extends State<GroupCard> {
           ),
         ),
         transform:
-            isHovered ? (Matrix4.identity()..scaleByDouble(1.02)) : Matrix4.identity(),
+            isHovered ? (Matrix4.identity()..scale(1.02)) : Matrix4.identity(),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
