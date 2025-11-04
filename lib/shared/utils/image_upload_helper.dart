@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:jala_form/services/supabase_service.dart';
@@ -64,7 +65,7 @@ class ImageUploadHelper {
     await service.uploadImage(
       _bucketName,
       imagePath,
-      imageBytes,
+      Uint8List.fromList(imageBytes),
     );
 
     // Get public URL
