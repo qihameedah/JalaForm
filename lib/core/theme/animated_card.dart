@@ -248,9 +248,9 @@ class _AnimatedButtonState extends State<AnimatedButton> {
             ),
           ),
           transform: _isPressed
-              ? (Matrix4.identity()..scaleByDouble(0.98))
+              ? (Matrix4.identity()..scale(0.98))
               : _isHovered
-                  ? (Matrix4.identity()..scaleByDouble(1.02))
+                  ? (Matrix4.identity()..scale(1.02))
                   : Matrix4.identity(),
           child: Center(
             child: widget.isLoading

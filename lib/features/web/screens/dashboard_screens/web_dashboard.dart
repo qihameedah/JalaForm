@@ -55,6 +55,7 @@ class _WebDashboardState extends State<WebDashboard>
   // UI State
   bool _isLoading = true;
   bool _isExporting = false;
+  bool _isCreatingForm = false;
   String _username = 'User';
   int _selectedFormIndex = -1;
   late AnimationController _animationController;
