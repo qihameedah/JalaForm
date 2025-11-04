@@ -50,6 +50,7 @@ class GroupsGrid extends StatelessWidget {
         itemBuilder: (context, index) {
           final group = groups[index];
           return AnimationConfiguration.staggeredGrid(
+            key: ValueKey(group.id),
             position: index,
             duration: const Duration(milliseconds: 500),
             columnCount: crossAxisCount,

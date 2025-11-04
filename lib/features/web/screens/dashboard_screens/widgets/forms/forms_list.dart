@@ -41,6 +41,7 @@ class FormsList extends StatelessWidget {
             final responses = formResponses[form.id] ?? <FormResponse>[];
 
             return AnimationConfiguration.staggeredList(
+              key: ValueKey(form.id),
               position: index,
               duration: const Duration(milliseconds: 300),
               child: SlideAnimation(

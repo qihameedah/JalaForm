@@ -166,8 +166,9 @@ class ResponsesTable extends StatelessWidget {
                         final response = responses[index];
                         final isEven = index % 2 == 0;
 
-                        // Add animation to each row
+                        // Add animation to each row with key for proper state management
                         return AnimationConfiguration.staggeredList(
+                          key: ValueKey(response.id),
                           position: index,
                           duration: const Duration(milliseconds: 375),
                           child: SlideAnimation(

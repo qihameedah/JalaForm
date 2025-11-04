@@ -361,7 +361,6 @@ class _WebFormSubmissionScreenState extends State<WebFormSubmissionScreen> {
         await _supabaseService.deleteDraftResponse(widget.form.id);
 
         if (mounted) {
-          _timer?.cancel();
           final periodDesc =
               _supabaseService.getRecurrencePeriodDescription(widget.form);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -396,6 +395,9 @@ class _WebFormSubmissionScreenState extends State<WebFormSubmissionScreen> {
         );
       }
     } finally {
+      // Always cancel timer if it exists (for checklists)
+      _timer?.cancel();
+
       if (mounted && !_formSubmitted) {
         setState(() {
           _isSubmitting = false;

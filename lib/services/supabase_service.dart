@@ -200,7 +200,16 @@ class SupabaseService {
       _formsChannel = null;
       await _formPermissionsChannel?.unsubscribe();
       _formPermissionsChannel = null;
-      debugPrint('Real-time subscriptions unsubscribed.');
+
+      // Close stream controllers to prevent memory leaks
+      if (!_formsStreamController.isClosed) {
+        await _formsStreamController.close();
+      }
+      if (!_availableFormsStreamController.isClosed) {
+        await _availableFormsStreamController.close();
+      }
+
+      debugPrint('Real-time subscriptions unsubscribed and stream controllers closed.');
     } catch (e) {
       debugPrint('Error disposing real-time subscriptions: $e');
     }

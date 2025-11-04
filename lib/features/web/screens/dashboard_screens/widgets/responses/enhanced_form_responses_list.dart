@@ -29,6 +29,7 @@ class EnhancedFormResponsesList extends StatelessWidget {
           final accentColor = isChecklist ? Colors.orange : Colors.blue;
 
           return AnimationConfiguration.staggeredList(
+            key: ValueKey(form.id),
             position: index,
             duration: const Duration(milliseconds: 375),
             child: SlideAnimation(

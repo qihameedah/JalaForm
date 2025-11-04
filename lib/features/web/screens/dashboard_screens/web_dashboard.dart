@@ -22,7 +22,11 @@ import 'views/groups_view.dart';
 import '../../services/export_service.dart';
 import '../../utils/date_formatter.dart';
 import '../../utils/response_analyzer.dart';
-import '../../models/likert_models.dart';
+
+// Import shared models and utilities
+import 'package:jala_form/shared/models/likert/likert_option.dart';
+import 'package:jala_form/shared/models/likert/likert_display_data.dart';
+import 'package:jala_form/shared/utils/likert_parser.dart';
 
 // Import widgets
 import 'widgets/header/dashboard_header.dart';
@@ -652,53 +656,8 @@ class _WebDashboardState extends State<WebDashboard>
 
   LikertDisplayData _parseLikertDisplayData(
       FormFieldModel field, Map<dynamic, dynamic> responseMap) {
-    // Convert response map to proper types
-    final Map<String, String> responses = {};
-    responseMap.forEach((key, value) {
-      responses[key.toString()] = value.toString();
-    });
-
-    // Get questions
-    final questions = field.likertQuestions ?? [];
-
-    // Parse options - same logic as in submission screen
-    List<LikertOption> options = [];
-
-    if (field.options != null && field.options!.isNotEmpty) {
-      options = field.options!.map((option) {
-        // options is List<String>, so each option is already a String
-        return LikertOption(
-          label: option,
-          value: option,
-        );
-      }).toList();
-    } else if (field.likertScale != null) {
-      // Generate numeric scale
-      final scale = field.likertScale!;
-      final startLabel = field.likertStartLabel ?? '';
-      final endLabel = field.likertEndLabel ?? '';
-      final middleLabel = field.likertMiddleLabel ?? '';
-
-      for (int i = 1; i <= scale; i++) {
-        String label;
-        if (i == 1) {
-          label = startLabel;
-        } else if (i == scale) {
-          label = endLabel;
-        } else if (i == ((scale + 1) ~/ 2) && middleLabel.isNotEmpty) {
-          label = middleLabel;
-        } else {
-          label = i.toString();
-        }
-        options.add(LikertOption(label: label, value: 'scale_$i'));
-      }
-    }
-
-    return LikertDisplayData(
-      questions: questions,
-      options: options,
-      responses: responses,
-    );
+    // Use shared utility for parsing Likert display data
+    return LikertParser.parseLikertDisplayData(field, responseMap);
   }
 
   Widget buildFieldCell(dynamic field, dynamic value) {
