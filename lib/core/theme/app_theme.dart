@@ -25,7 +25,7 @@ class AppTheme {
   // Elevation and Shadow
   static final List<BoxShadow> defaultShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.05),
+      color: Colors.black.withAlpha(13), // 0.05 * 255 ≈ 13
       blurRadius: 10,
       offset: const Offset(0, 4),
     ),
@@ -33,7 +33,7 @@ class AppTheme {
 
   static final List<BoxShadow> cardShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.08),
+      color: Colors.black.withAlpha(20), // 0.08 * 255 ≈ 20
       blurRadius: 12,
       offset: const Offset(0, 3),
     ),
