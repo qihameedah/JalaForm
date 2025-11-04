@@ -112,7 +112,7 @@ class AvailableFormsList extends StatelessWidget {
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        'Created: ${formatDate(form.created_at)}',
+                                        'Created: ${DateFormatter.formatDate(form.created_at)}',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey.shade600,

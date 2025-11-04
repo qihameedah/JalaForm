@@ -6,8 +6,8 @@ class EmptyState extends StatelessWidget {
   final String title;
   final String message;
   final IconData icon;
-  final String actionLabel;
-  final VoidCallback onActionPressed;
+  final String? actionLabel;
+  final VoidCallback? onActionPressed;
   final VoidCallback? onCreateForm; // Keep for backward compatibility
 
   const EmptyState({
@@ -15,12 +15,10 @@ class EmptyState extends StatelessWidget {
     this.title = 'Welcome to Jala Form Dashboard',
     this.message = 'Create your first form to get started. You can create regular forms or checklists with time windows and recurrence patterns.',
     this.icon = Icons.assignment_outlined,
-    this.actionLabel = 'Create Your First Form',
-    VoidCallback? onActionPressed,
+    this.actionLabel,
+    this.onActionPressed,
     this.onCreateForm,
-  }) : onActionPressed = onActionPressed ?? onCreateForm ?? _defaultAction;
-
-  static void _defaultAction() {}
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -81,32 +79,34 @@ class EmptyState extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: isSmallScreen ? double.infinity : null,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.add, color: Colors.white),
-                  label: Text(actionLabel,
-                      style: const TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isSmallScreen ? 24 : 32,
-                      vertical: isSmallScreen ? 16 : 18,
+              if (actionLabel != null && (onActionPressed != null || onCreateForm != null)) ...[
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: isSmallScreen ? double.infinity : null,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    label: Text(actionLabel!,
+                        style: const TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isSmallScreen ? 24 : 32,
+                        vertical: isSmallScreen ? 16 : 18,
+                      ),
+                      textStyle: TextStyle(
+                        fontSize: isSmallScreen ? 16 : 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    textStyle: TextStyle(
-                      fontSize: isSmallScreen ? 16 : 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    onPressed: onActionPressed ?? onCreateForm ?? () {},
                   ),
-                  onPressed: onActionPressed,
                 ),
-              ),
+              ],
             ],
           ),
         ),

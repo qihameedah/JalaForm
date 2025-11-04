@@ -237,20 +237,20 @@ class _AnimatedButtonState extends State<AnimatedButton> {
                   ]
                 : [
                     BoxShadow(
-                      color: buttonColor.withOpacity(0.2),
+                      color: buttonColor.withAlpha(51), // 0.2 * 255 ≈ 51
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
                   ],
             border: Border.all(
-              color: buttonColor.withOpacity(0.1),
+              color: buttonColor.withAlpha(26), // 0.1 * 255 ≈ 26
               width: 1,
             ),
           ),
           transform: _isPressed
-              ? (Matrix4.identity()..scale(0.98))
+              ? (Matrix4.identity()..scaleByDouble(0.98))
               : _isHovered
-                  ? (Matrix4.identity()..scale(1.02))
+                  ? (Matrix4.identity()..scaleByDouble(1.02))
                   : Matrix4.identity(),
           child: Center(
             child: widget.isLoading

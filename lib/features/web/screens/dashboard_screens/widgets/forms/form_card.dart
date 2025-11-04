@@ -155,7 +155,7 @@ class FormCard extends StatelessWidget {
                               ),
                               if (!isXsScreen)
                                 MetadataPill(
-                                  label: formatDate(form.created_at),
+                                  label: DateFormatter.formatDate(form.created_at),
                                   icon: Icons.calendar_today_rounded,
                                   fontSize: metadataFontSize,
                                   iconSize: metadataFontSize + 1,
