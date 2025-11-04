@@ -97,7 +97,7 @@ class ResponsesView extends StatelessWidget {
           SearchFilterBar(
             searchController: searchController,
             sortBy: sortBy,
-            onSearchChanged: (value) {}, // Handled by controller
+            onSortChanged: (value) {}, // Handled by controller
           ),
 
           // Form list or empty state

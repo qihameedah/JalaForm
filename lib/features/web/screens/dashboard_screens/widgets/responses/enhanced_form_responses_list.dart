@@ -7,13 +7,15 @@ import 'package:jala_form/features/web/utils/date_formatter.dart';
 class EnhancedFormResponsesList extends StatelessWidget {
   final List<CustomForm> forms;
   final Map<String, List<FormResponse>> formResponses;
-  final Function(CustomForm, int) onSelectForm;
+  final Function(int) onFormSelected;
+  final String Function(DateTime) formatDate;
 
   const EnhancedFormResponsesList({
     super.key,
     required this.forms,
     required this.formResponses,
-    required this.onSelectForm,
+    required this.onFormSelected,
+    required this.formatDate,
   });
 
   @override
@@ -56,7 +58,7 @@ class EnhancedFormResponsesList extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     child: InkWell(
                       borderRadius: BorderRadius.circular(10),
-                      onTap: () => onSelectForm(form, index),
+                      onTap: () => onFormSelected(index),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Row(
