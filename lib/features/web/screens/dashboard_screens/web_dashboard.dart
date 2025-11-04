@@ -27,6 +27,7 @@ import '../../utils/response_analyzer.dart';
 import 'package:jala_form/shared/models/likert/likert_option.dart';
 import 'package:jala_form/shared/models/likert/likert_display_data.dart';
 import 'package:jala_form/shared/utils/likert_parser.dart';
+import 'package:jala_form/shared/models/forms/dashboard_stats.dart';
 
 // Import widgets
 import 'widgets/header/dashboard_header.dart';
@@ -51,6 +52,9 @@ class _WebDashboardState extends State<WebDashboard>
   List<CustomForm> _availableRegularForms = <CustomForm>[];
   List<CustomForm> _availableChecklistForms = <CustomForm>[];
   final Map<String, List<FormResponse>> _formResponses = <String, List<FormResponse>>{};
+
+  // Memoized dashboard statistics
+  DashboardStats _dashboardStats = const DashboardStats.empty();
 
   // State variables - Groups
   List<UserGroup> _userGroups = <UserGroup>[];
@@ -159,17 +163,10 @@ class _WebDashboardState extends State<WebDashboard>
 
       if (user != null && mounted) {
         final myForms = forms.where((form) => form.created_by == user.id).toList();
-        final Map<String, List<FormResponse>> responseMap = <String, List<FormResponse>>{};
 
-        for (var form in myForms) {
-          try {
-            final responses = await _supabaseService.getFormResponses(form.id);
-            responseMap[form.id] = responses;
-          } catch (e) {
-            debugPrint('Error loading responses for form ${form.id}: $e');
-            responseMap[form.id] = <FormResponse>[];
-          }
-        }
+        // Batch fetch responses for all forms at once (eliminates N+1 query pattern)
+        final formIds = myForms.map((form) => form.id).toList();
+        final responseMap = await _supabaseService.getFormResponsesBatch(formIds);
 
         if (mounted) {
           setState(() {
@@ -182,10 +179,18 @@ class _WebDashboardState extends State<WebDashboard>
         try {
           final availableForms = await _supabaseService.getAvailableForms();
           if (mounted) {
+            // Compute dashboard stats once (memoization)
+            final stats = DashboardStats.compute(
+              myForms: myForms,
+              availableForms: availableForms,
+              formResponses: responseMap,
+            );
+
             setState(() {
               _availableForms = List<CustomForm>.from(availableForms);
               _availableRegularForms = availableForms.where((form) => !form.isChecklist).toList();
               _availableChecklistForms = availableForms.where((form) => form.isChecklist).toList();
+              _dashboardStats = stats; // Store computed stats
             });
           }
         } catch (e) {
@@ -195,6 +200,7 @@ class _WebDashboardState extends State<WebDashboard>
               _availableForms = <CustomForm>[];
               _availableRegularForms = <CustomForm>[];
               _availableChecklistForms = <CustomForm>[];
+              _dashboardStats = const DashboardStats.empty();
             });
           }
         }
