@@ -60,7 +60,6 @@ class _WebDashboardState extends State<WebDashboard>
   late AnimationController _animationController;
   String _selectedFormType = 'all'; // 'all', 'forms', 'checklists'
   String _currentView = 'dashboard'; // dashboard, forms, responses, groups
-  bool _isCreatingForm = false;
 
   // Search and filter
   final TextEditingController _searchController = TextEditingController();
@@ -631,16 +630,6 @@ class _WebDashboardState extends State<WebDashboard>
     }
   }
 
-  void _sortFormsList(List<CustomForm> forms) {
-    if (_sortBy == 'newest') {
-      forms.sort((a, b) => b.created_at.compareTo(a.created_at));
-    } else if (_sortBy == 'oldest') {
-      forms.sort((a, b) => a.created_at.compareTo(b.created_at));
-    } else if (_sortBy == 'alphabetical') {
-      forms.sort((a, b) => a.title.compareTo(b.title));
-    }
-  }
-
   void _sortGroups() {
     setState(() {
       if (_groupSortBy == 'newest') {
@@ -694,9 +683,7 @@ class _WebDashboardState extends State<WebDashboard>
           label = startLabel;
         } else if (i == scale) {
           label = endLabel;
-        } else if (i == ((scale + 1) ~/ 2) &&
-            middleLabel != null &&
-            middleLabel.isNotEmpty) {
+        } else if (i == ((scale + 1) ~/ 2) && middleLabel.isNotEmpty) {
           label = middleLabel;
         } else {
           label = i.toString();
