@@ -666,11 +666,13 @@ class _WebDashboardState extends State<WebDashboard>
 
     if (field.options != null && field.options!.isNotEmpty) {
       options = field.options!.map((option) {
-        final label = option['label'] ?? option;
-        final value = option['value'] ?? option;
+        final dynamic labelRaw = option['label'] ?? option;
+        final dynamic valueRaw = option['value'] ?? option;
+        final String labelStr = labelRaw.toString();
+        final String valueStr = valueRaw.toString();
         return LikertOption(
-          label: label.toString(),
-          value: value.toString(),
+          label: labelStr,
+          value: valueStr,
         );
       }).toList();
     } else if (field.likertScale != null) {
