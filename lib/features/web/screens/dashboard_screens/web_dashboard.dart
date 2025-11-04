@@ -666,9 +666,10 @@ class _WebDashboardState extends State<WebDashboard>
 
     if (field.options != null && field.options!.isNotEmpty) {
       options = field.options!.map((option) {
+        // options is List<String>, so each option is already a String
         return LikertOption(
-          label: (option['label'] ?? option).toString(),
-          value: (option['value'] ?? option).toString(),
+          label: option,
+          value: option,
         );
       }).toList();
     } else if (field.likertScale != null) {
