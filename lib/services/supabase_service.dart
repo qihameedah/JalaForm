@@ -12,6 +12,7 @@ import 'package:jala_form/features/forms/models/form_response.dart';
 import 'package:jala_form/features/forms/models/group_member.dart';
 import 'package:jala_form/features/forms/models/user_group.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:jala_form/shared/utils/cache_manager.dart';
 
 
 // SupabaseConstants class has been moved to supabase_constants.dart
@@ -22,6 +23,14 @@ class SupabaseService {
   late final SupabaseAuthService _authService;
   late final SupabaseStorageService _storageService; // New Storage Service instance
   static bool _initialized = false;
+
+  // Cache for form responses (5 minute TTL)
+  final CacheManager<String, List<FormResponse>> _responseCache =
+      CacheManager(defaultTtl: const Duration(minutes: 5));
+
+  // Cache for form response batches (5 minute TTL)
+  final CacheManager<String, Map<String, List<FormResponse>>> _batchResponseCache =
+      CacheManager(defaultTtl: const Duration(minutes: 5));
 
   RealtimeChannel? _formsChannel;
   RealtimeChannel? _formPermissionsChannel;
@@ -200,7 +209,16 @@ class SupabaseService {
       _formsChannel = null;
       await _formPermissionsChannel?.unsubscribe();
       _formPermissionsChannel = null;
-      debugPrint('Real-time subscriptions unsubscribed.');
+
+      // Close stream controllers to prevent memory leaks
+      if (!_formsStreamController.isClosed) {
+        await _formsStreamController.close();
+      }
+      if (!_availableFormsStreamController.isClosed) {
+        await _availableFormsStreamController.close();
+      }
+
+      debugPrint('Real-time subscriptions unsubscribed and stream controllers closed.');
     } catch (e) {
       debugPrint('Error disposing real-time subscriptions: $e');
     }
@@ -665,6 +683,10 @@ class SupabaseService {
       if (responseId.isNotEmpty && response.respondent_id != null) {
         await deleteDraftResponse(response.form_id);
       }
+
+      // Invalidate cache for this form since a new response was added
+      clearFormResponseCache(response.form_id);
+
       return responseId;
     } catch (e) {
       debugPrint('Error submitting form response for form ${response.form_id}: $e');
@@ -672,15 +694,41 @@ class SupabaseService {
     }
   }
 
-  Future<List<FormResponse>> getFormResponses(String formId) async {
+  Future<List<FormResponse>> getFormResponses(String formId, {
+    int? limit,
+    int? offset,
+    bool useCache = true,
+  }) async {
+    // Create cache key including pagination params
+    final cacheKey = limit == null && offset == null ? formId : '$formId:$limit:$offset';
+
+    // Try cache first (only for non-paginated queries)
+    if (useCache && limit == null && offset == null) {
+      final cached = _responseCache.get(formId);
+      if (cached != null) {
+        debugPrint('Cache hit for form responses: $formId');
+        return cached;
+      }
+    }
+
     try {
-      final response = await _withRetry(() => _client
+      var query = _client
           .from(SupabaseConstants.formResponsesTable)
           .select()
           .eq('form_id', formId)
-          .order('submitted_at', ascending: false));
+          .order('submitted_at', ascending: false);
+
+      // Apply pagination if provided
+      if (limit != null) {
+        query = query.limit(limit);
+      }
+      if (offset != null) {
+        query = query.range(offset, offset + (limit ?? 1000) - 1);
+      }
+
+      final response = await _withRetry(() => query);
       final responseList = _ensureListOfMaps(response);
-      return responseList.map<FormResponse>((json) {
+      final responses = responseList.map<FormResponse>((json) {
         try {
           return FormResponse.fromJson(json);
         } catch (e) {
@@ -688,10 +736,121 @@ class SupabaseService {
           rethrow;
         }
       }).toList();
+
+      // Cache the result (only for non-paginated queries)
+      if (useCache && limit == null && offset == null) {
+        _responseCache.put(formId, responses);
+      }
+
+      return responses;
     } catch (e) {
       debugPrint('Error getting form responses for form $formId: $e');
       return [];
     }
+  }
+
+  /// Get total count of responses for a form (useful for pagination)
+  Future<int> getFormResponseCount(String formId) async {
+    try {
+      final response = await _withRetry(() => _client
+          .from(SupabaseConstants.formResponsesTable)
+          .select('*', const FetchOptions(count: CountOption.exact))
+          .eq('form_id', formId));
+      return response.count ?? 0;
+    } catch (e) {
+      debugPrint('Error getting form response count for form $formId: $e');
+      return 0;
+    }
+  }
+
+  /// Batch fetch form responses for multiple forms at once
+  ///
+  /// This eliminates the N+1 query pattern by fetching all responses
+  /// in a single database query using the `in` filter.
+  ///
+  /// Returns a Map where keys are form IDs and values are lists of responses.
+  /// If a form has no responses, it will have an empty list.
+  Future<Map<String, List<FormResponse>>> getFormResponsesBatch(
+      List<String> formIds, {bool useCache = true}) async {
+    if (formIds.isEmpty) {
+      return {};
+    }
+
+    // Create cache key from sorted form IDs
+    final sortedIds = [...formIds]..sort();
+    final batchCacheKey = sortedIds.join(',');
+
+    // Try cache first
+    if (useCache) {
+      final cached = _batchResponseCache.get(batchCacheKey);
+      if (cached != null) {
+        debugPrint('Cache hit for batch responses: ${formIds.length} forms');
+        return cached;
+      }
+    }
+
+    try {
+      // Fetch all responses for all forms in a single query
+      final response = await _withRetry(() => _client
+          .from(SupabaseConstants.formResponsesTable)
+          .select()
+          .in_('form_id', formIds)
+          .order('submitted_at', ascending: false));
+
+      final responseList = _ensureListOfMaps(response);
+
+      // Group responses by form_id
+      final Map<String, List<FormResponse>> responseMap = {};
+
+      // Initialize all form IDs with empty lists
+      for (var formId in formIds) {
+        responseMap[formId] = [];
+      }
+
+      // Parse and group responses
+      for (var json in responseList) {
+        try {
+          final formResponse = FormResponse.fromJson(json);
+          final formId = formResponse.form_id;
+          if (responseMap.containsKey(formId)) {
+            responseMap[formId]!.add(formResponse);
+          }
+        } catch (e) {
+          debugPrint('Error parsing form response JSON in batch: $e, JSON: $json');
+        }
+      }
+
+      // Cache the batch result
+      if (useCache) {
+        _batchResponseCache.put(batchCacheKey, responseMap);
+
+        // Also cache individual form responses
+        for (var entry in responseMap.entries) {
+          _responseCache.put(entry.key, entry.value);
+        }
+      }
+
+      return responseMap;
+    } catch (e) {
+      debugPrint('Error getting form responses batch: $e');
+      // Return empty lists for all form IDs on error
+      return Map.fromIterable(formIds, value: (_) => <FormResponse>[]);
+    }
+  }
+
+  /// Clear all response caches
+  ///
+  /// Useful when data has been updated and cache should be invalidated
+  void clearResponseCache() {
+    _responseCache.clear();
+    _batchResponseCache.clear();
+    debugPrint('Response caches cleared');
+  }
+
+  /// Clear cache for a specific form
+  void clearFormResponseCache(String formId) {
+    _responseCache.remove(formId);
+    debugPrint('Cache cleared for form: $formId');
   }
 
   Future<T> _withRetry<T>(Future<T> Function() operation,
