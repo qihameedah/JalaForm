@@ -754,9 +754,10 @@ class SupabaseService {
     try {
       final response = await _withRetry(() => _client
           .from(SupabaseConstants.formResponsesTable)
-          .select('*', const FetchOptions(count: CountOption.exact))
-          .eq('form_id', formId));
-      return response.count ?? 0;
+          .select('*')
+          .eq('form_id', formId)
+          .count(CountOption.exact));
+      return response.count;
     } catch (e) {
       debugPrint('Error getting form response count for form $formId: $e');
       return 0;
@@ -794,7 +795,7 @@ class SupabaseService {
       final response = await _withRetry(() => _client
           .from(SupabaseConstants.formResponsesTable)
           .select()
-          .in_('form_id', formIds)
+          .inFilter('form_id', formIds)
           .order('submitted_at', ascending: false));
 
       final responseList = _ensureListOfMaps(response);
