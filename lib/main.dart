@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:jala_form/core/routing/app_router.dart';
 import 'package:jala_form/features/auth/sign_in/screens/auth_screen.dart';
 import 'package:jala_form/features/home/screens/home_screen.dart';
 import 'package:jala_form/services/supabase_service.dart';
@@ -279,6 +280,9 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
         home: const AuthWrapper(),
+        // Use centralized router with authentication guards
+        onGenerateRoute: AppRouter.onGenerateRoute,
+        // Fallback for named routes that don't have parameters
         routes: {
           '/home': (context) => const HomeScreen(),
           '/login': (context) => const AuthScreen(),
