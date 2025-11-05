@@ -41,8 +41,8 @@ class ResponsesViewController extends ChangeNotifier {
 
     if (_searchQuery.isNotEmpty) {
       responses = responses.where((response) {
-        final submitterEmail = response.submittedBy ?? '';
-        return submitterEmail.toLowerCase().contains(_searchQuery.toLowerCase());
+        final respondentId = response.respondent_id ?? '';
+        return respondentId.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     }
 
@@ -89,21 +89,22 @@ class ResponsesViewController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deleteResponse(String formId, String responseId) async {
-    try {
-      await _supabaseService.deleteFormResponse(responseId);
-
-      // Remove from local state
-      if (_formResponses.containsKey(formId)) {
-        _formResponses[formId]!.removeWhere((r) => r.id == responseId);
-        notifyListeners();
-      }
-    } catch (e) {
-      _errorMessage = 'Failed to delete response: $e';
-      debugPrint(_errorMessage);
-      rethrow;
-    }
-  }
+  // TODO: Implement when SupabaseService adds deleteFormResponse method
+  // Future<void> deleteResponse(String formId, String responseId) async {
+  //   try {
+  //     await _supabaseService.deleteFormResponse(responseId);
+  //
+  //     // Remove from local state
+  //     if (_formResponses.containsKey(formId)) {
+  //       _formResponses[formId]!.removeWhere((r) => r.id == responseId);
+  //       notifyListeners();
+  //     }
+  //   } catch (e) {
+  //     _errorMessage = 'Failed to delete response: $e';
+  //     debugPrint(_errorMessage);
+  //     rethrow;
+  //   }
+  // }
 
   Future<void> refresh() async {
     if (_myForms.isNotEmpty) {

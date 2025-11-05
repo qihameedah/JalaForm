@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:jala_form/features/forms/models/custom_form.dart';
 import 'package:jala_form/features/forms/models/form_response.dart';
-import 'package:jala_form/features/groups/models/user_group.dart';
+import 'package:jala_form/features/forms/models/user_group.dart';
 
 /// Controller for managing dashboard statistics
 ///
@@ -68,7 +68,7 @@ class DashboardStatsController extends ChangeNotifier {
   int get recentFormsCount {
     final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
     return _myForms.where((form) {
-      return (form.createdAt?.isAfter(sevenDaysAgo) ?? false);
+      return form.created_at.isAfter(sevenDaysAgo);
     }).length;
   }
 
@@ -79,7 +79,7 @@ class DashboardStatsController extends ChangeNotifier {
 
     for (final responses in _formResponses.values) {
       count += responses.where((response) {
-        return (response.submittedAt?.isAfter(sevenDaysAgo) ?? false);
+        return response.submitted_at.isAfter(sevenDaysAgo);
       }).length;
     }
 
@@ -126,7 +126,7 @@ class DashboardStatsController extends ChangeNotifier {
 
     return _myForms.where((form) {
       final responses = _formResponses[form.id] ?? [];
-      return responses.any((r) => r.submittedAt?.isAfter(thirtyDaysAgo) ?? false);
+      return responses.any((r) => r.submitted_at.isAfter(thirtyDaysAgo));
     }).toList();
   }
 
@@ -136,7 +136,7 @@ class DashboardStatsController extends ChangeNotifier {
 
     return _myForms.where((form) {
       final responses = _formResponses[form.id] ?? [];
-      return responses.every((r) => !(r.submittedAt?.isAfter(thirtyDaysAgo) ?? false));
+      return responses.every((r) => !r.submitted_at.isAfter(thirtyDaysAgo));
     }).toList();
   }
 

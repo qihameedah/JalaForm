@@ -52,20 +52,17 @@ class AvailableFormsViewController extends ChangeNotifier {
     // Apply sorting
     switch (_sortBy) {
       case 'recent':
-        forms.sort((a, b) => (b.createdAt ?? DateTime(1970))
-            .compareTo(a.createdAt ?? DateTime(1970)));
+        forms.sort((a, b) => b.created_at.compareTo(a.created_at));
         break;
       case 'alphabetical':
         forms.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
         break;
       case 'oldest':
-        forms.sort((a, b) => (a.createdAt ?? DateTime(1970))
-            .compareTo(b.createdAt ?? DateTime(1970)));
+        forms.sort((a, b) => a.created_at.compareTo(b.created_at));
         break;
       default:
         // Default to recent
-        forms.sort((a, b) => (b.createdAt ?? DateTime(1970))
-            .compareTo(a.createdAt ?? DateTime(1970)));
+        forms.sort((a, b) => b.created_at.compareTo(a.created_at));
     }
 
     return forms;
@@ -205,7 +202,7 @@ class AvailableFormsViewController extends ChangeNotifier {
   List<CustomForm> get recentlyAdded {
     final sevenDaysAgo = DateTime.now().subtract(const Duration(days: 7));
     return _availableForms.where((form) {
-      return form.createdAt?.isAfter(sevenDaysAgo) ?? false;
+      return form.created_at.isAfter(sevenDaysAgo);
     }).toList();
   }
 

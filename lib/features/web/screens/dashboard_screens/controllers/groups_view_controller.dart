@@ -1,7 +1,7 @@
 // lib/features/web/screens/dashboard_screens/controllers/groups_view_controller.dart
 
 import 'package:flutter/material.dart';
-import 'package:jala_form/features/groups/models/user_group.dart';
+import 'package:jala_form/features/forms/models/user_group.dart';
 import 'package:jala_form/services/supabase_service.dart';
 
 /// Controller for managing "Groups" view in the dashboard
@@ -34,19 +34,17 @@ class GroupsViewController extends ChangeNotifier {
     if (_searchQuery.isNotEmpty) {
       groups = groups.where((group) {
         return group.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            (group.description?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+            group.description.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     }
 
     // Apply sorting
     switch (_sortBy) {
       case 'recent':
-        groups.sort((a, b) => (b.createdAt ?? DateTime(1970))
-            .compareTo(a.createdAt ?? DateTime(1970)));
+        groups.sort((a, b) => b.created_at.compareTo(a.created_at));
         break;
       case 'oldest':
-        groups.sort((a, b) => (a.createdAt ?? DateTime(1970))
-            .compareTo(b.createdAt ?? DateTime(1970)));
+        groups.sort((a, b) => a.created_at.compareTo(b.created_at));
         break;
       case 'name_asc':
         groups.sort((a, b) => a.name.compareTo(b.name));

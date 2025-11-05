@@ -52,12 +52,10 @@ class FormsViewController extends ChangeNotifier {
     // Apply sorting
     switch (_sortBy) {
       case 'recent':
-        forms.sort((a, b) => (b.createdAt ?? DateTime(1970))
-            .compareTo(a.createdAt ?? DateTime(1970)));
+        forms.sort((a, b) => b.created_at.compareTo(a.created_at));
         break;
       case 'oldest':
-        forms.sort((a, b) => (a.createdAt ?? DateTime(1970))
-            .compareTo(b.createdAt ?? DateTime(1970)));
+        forms.sort((a, b) => a.created_at.compareTo(b.created_at));
         break;
       case 'name_asc':
         forms.sort((a, b) => a.title.compareTo(b.title));
@@ -77,7 +75,7 @@ class FormsViewController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _myForms = await _supabaseService.getMyForms();
+      _myForms = await _supabaseService.getForms();
     } catch (e) {
       _errorMessage = 'Failed to load forms: $e';
       debugPrint(_errorMessage);
