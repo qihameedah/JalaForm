@@ -426,6 +426,7 @@ class _WebAuthScreenState extends State<WebAuthScreen>
                                             controller: _passwordController,
                                             labelText: 'Password',
                                             prefixIcon: Icons.lock_outline,
+                                            onFieldSubmitted: (_) => _signIn(),
                                             suffixIcon: IconButton(
                                               icon: Icon(
                                                 _passwordVisible
@@ -707,6 +708,7 @@ class _WebAuthScreenState extends State<WebAuthScreen>
     TextInputType? keyboardType,
     bool obscureText = false,
     FormFieldValidator<String>? validator,
+    ValueChanged<String>? onFieldSubmitted,
   }) {
     final mediaQuery = MediaQuery.of(context);
     final textScaleFactor = (mediaQuery.textScaleFactor ?? 1.0).clamp(0.8, 1.3);
@@ -714,6 +716,7 @@ class _WebAuthScreenState extends State<WebAuthScreen>
     return FormBuilderTextField(
       name: name,
       controller: controller,
+      onSubmitted: onFieldSubmitted,
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: TextStyle(

@@ -398,6 +398,7 @@ class _LoginFormCard extends StatelessWidget {
                   border: const OutlineInputBorder(),
                 ),
                 obscureText: !passwordVisible,
+                onFieldSubmitted: (_) => onSignIn(),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';
