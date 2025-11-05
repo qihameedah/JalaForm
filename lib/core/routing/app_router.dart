@@ -98,12 +98,12 @@ class AppRouter {
               const SizedBox(height: 16),
               Text(
                 'Route not found',
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: Theme.of(_).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
               Text(
                 'The route "$routeName" does not exist',
-                style: Theme.of(context).textTheme.bodyMedium,
+                style: Theme.of(_).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
