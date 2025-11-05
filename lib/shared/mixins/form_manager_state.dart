@@ -180,13 +180,20 @@ mixin BaseFormManagerState<T extends StatefulWidget> on State<T> {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       label: '${fieldToDuplicate.label} (Copy)',
       type: fieldToDuplicate.type,
-      required: fieldToDuplicate.required,
+      isRequired: fieldToDuplicate.isRequired,
       options: fieldToDuplicate.options != null
           ? List.from(fieldToDuplicate.options!)
           : null,
       placeholder: fieldToDuplicate.placeholder,
-      helpText: fieldToDuplicate.helpText,
       validation: fieldToDuplicate.validation,
+      // Copy Likert scale properties if present
+      likertScale: fieldToDuplicate.likertScale,
+      likertStartLabel: fieldToDuplicate.likertStartLabel,
+      likertEndLabel: fieldToDuplicate.likertEndLabel,
+      likertMiddleLabel: fieldToDuplicate.likertMiddleLabel,
+      likertQuestions: fieldToDuplicate.likertQuestions != null
+          ? List.from(fieldToDuplicate.likertQuestions!)
+          : null,
     );
 
     if (mounted) {
@@ -218,12 +225,12 @@ mixin BaseFormManagerState<T extends StatefulWidget> on State<T> {
 
   /// Get required fields
   List<FormFieldModel> getRequiredFields() {
-    return _fields.where((field) => field.required).toList();
+    return _fields.where((field) => field.isRequired).toList();
   }
 
   /// Get optional fields
   List<FormFieldModel> getOptionalFields() {
-    return _fields.where((field) => !field.required).toList();
+    return _fields.where((field) => !field.isRequired).toList();
   }
 
   /// Validate all fields
