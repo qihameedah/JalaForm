@@ -18,9 +18,9 @@ class AppValidator {
       return 'Password is required.';
     }
 
-    // Check for minimum password length
-    if (value.length < 6) {
-      return 'Password must be at least 6 characters long.';
+    // SECURITY: Check for minimum password length (industry standard: 12+)
+    if (value.length < 12) {
+      return 'Password must be at least 12 characters long.';
     }
 
     // Check for uppercase letters

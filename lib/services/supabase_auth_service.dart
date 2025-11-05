@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:jala_form/services/supabase_constants.dart';
+import 'package:jala_form/services/secure_token_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -69,29 +70,64 @@ class SupabaseAuthService {
   Future<void> _saveSession(Session? session) async {
     if (session != null) {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(SupabaseConstants.prefsAccessToken, session.accessToken);
+        // SECURITY: Use secure storage for tokens (Android Keystore / iOS Keychain)
+        await SecureTokenStorage.saveAccessToken(session.accessToken);
+
         if (session.refreshToken != null) {
-          await prefs.setString(SupabaseConstants.prefsRefreshToken, session.refreshToken!);
+          await SecureTokenStorage.saveRefreshToken(session.refreshToken!);
         }
+
         if (session.expiresAt != null) {
-          await prefs.setInt(SupabaseConstants.prefsExpiresAt, session.expiresAt!);
+          await SecureTokenStorage.saveExpiresAt(session.expiresAt!);
         }
-        // debugPrint('Session details (token, refresh, expiry) saved via Auth Service');
+
+        // Migration: Clean up old tokens from SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove(SupabaseConstants.prefsAccessToken);
+        await prefs.remove(SupabaseConstants.prefsRefreshToken);
+        await prefs.remove(SupabaseConstants.prefsExpiresAt);
+
+        debugPrint('[Auth] Session saved securely');
       } catch (e) {
-        debugPrint('Error saving session details via Auth Service: $e');
+        debugPrint('[Auth] Error saving session: $e');
+        rethrow;
       }
     }
   }
 
   Future<bool> restoreSession() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final accessToken = prefs.getString(SupabaseConstants.prefsAccessToken);
-      final expiresAt = prefs.getInt(SupabaseConstants.prefsExpiresAt);
+      // SECURITY: Try to read from secure storage first
+      String? accessToken = await SecureTokenStorage.getAccessToken();
+      int? expiresAt = await SecureTokenStorage.getExpiresAt();
+
+      // Migration: If not in secure storage, try SharedPreferences (old version)
+      if (accessToken == null) {
+        final prefs = await SharedPreferences.getInstance();
+        final oldAccessToken = prefs.getString(SupabaseConstants.prefsAccessToken);
+        final oldRefreshToken = prefs.getString(SupabaseConstants.prefsRefreshToken);
+        final oldExpiresAt = prefs.getInt(SupabaseConstants.prefsExpiresAt);
+
+        if (oldAccessToken != null) {
+          debugPrint('[Auth] Migrating tokens from SharedPreferences to secure storage');
+          await SecureTokenStorage.migrateFromSharedPreferences(
+            oldAccessToken: oldAccessToken,
+            oldRefreshToken: oldRefreshToken,
+            oldExpiresAt: oldExpiresAt,
+          );
+
+          // Clean up old storage
+          await prefs.remove(SupabaseConstants.prefsAccessToken);
+          await prefs.remove(SupabaseConstants.prefsRefreshToken);
+          await prefs.remove(SupabaseConstants.prefsExpiresAt);
+
+          accessToken = oldAccessToken;
+          expiresAt = oldExpiresAt;
+        }
+      }
 
       if (accessToken == null) {
-        // debugPrint('No access token found for session restoration.');
+        debugPrint('[Auth] No access token found for session restoration');
         return false;
       }
 
@@ -137,24 +173,34 @@ class SupabaseAuthService {
     }
   }
 
-  // Clears tokens and expiry, keeps savedEmail/Password for "Remember Me"
+  // Clears tokens and expiry, keeps savedEmail for "Remember Me"
   Future<void> clearAuthTokens() async {
+    // SECURITY: Clear secure storage
+    await SecureTokenStorage.clearAll();
+
+    // Also clear old SharedPreferences (migration cleanup)
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(SupabaseConstants.prefsAccessToken);
     await prefs.remove(SupabaseConstants.prefsRefreshToken);
     await prefs.remove(SupabaseConstants.prefsExpiresAt);
-    // debugPrint('Auth tokens (access, refresh, expiry) cleared.');
+
+    debugPrint('[Auth] Auth tokens cleared securely');
   }
 
-  // Clears all session related data including "Remember Me" credentials
-  Future<void> _clearSessionInternal() async { // Changed to private using _
+  // Clears all session related data including "Remember Me" email
+  Future<void> _clearSessionInternal() async {
+    // SECURITY: Clear secure storage
+    await SecureTokenStorage.clearAll();
+
+    // Clear SharedPreferences (both new and old data)
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(SupabaseConstants.prefsAccessToken);
     await prefs.remove(SupabaseConstants.prefsRefreshToken);
     await prefs.remove(SupabaseConstants.prefsExpiresAt);
-    await prefs.remove(SupabaseConstants.prefsSavedEmail); // Also clear these
-    await prefs.remove(SupabaseConstants.prefsSavedPassword); // Also clear these
-    // debugPrint('All session data including remember me cleared.');
+    await prefs.remove(SupabaseConstants.prefsSavedEmail);
+    await prefs.remove('savedPassword'); // Clean up old password storage
+
+    debugPrint('[Auth] All session data cleared');
   }
 
   // Public method that might be called from SupabaseService

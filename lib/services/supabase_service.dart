@@ -3,6 +3,7 @@ import 'dart:async';
 // Added for Uint8List parameter in uploadImage signature
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jala_form/services/supabase_auth_service.dart';
 import 'package:jala_form/services/supabase_constants.dart';
 import 'package:jala_form/services/supabase_storage_service.dart';
@@ -65,10 +66,21 @@ class SupabaseService {
     if (_initialized) return;
     try {
       await Future.delayed(const Duration(milliseconds: 500));
+
+      // Load Supabase credentials from environment variables
+      final supabaseUrl = dotenv.env['SUPABASE_URL'];
+      final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
+
+      if (supabaseUrl == null || supabaseAnonKey == null) {
+        throw Exception(
+          'Missing Supabase credentials in .env file. '
+          'Please ensure SUPABASE_URL and SUPABASE_ANON_KEY are set.',
+        );
+      }
+
       await Supabase.initialize(
-        url: 'https://nacwvaycdmltjkmkbwsp.supabase.co',
-        anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hY3d2YXljZG1sdGprbWtid3NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkwOTk5NjcsImV4cCI6MjA2NDY3NTk2N30.8_FXXHehG2zgDY7mS7vXz5FMeVIK9baohMIzvKO7o6g',
+        url: supabaseUrl,
+        anonKey: supabaseAnonKey,
         debug: kDebugMode,
       );
       _initialized = true;

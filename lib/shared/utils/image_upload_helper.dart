@@ -31,6 +31,16 @@ class ImageUploadHelper {
     // Read image bytes
     final imageBytes = await File(imageFile.path).readAsBytes();
 
+    // SECURITY: Validate image using magic bytes
+    if (!isValidImageFile(imageBytes)) {
+      throw Exception('Invalid image file. Only PNG, JPEG, GIF, WebP, and BMP are allowed.');
+    }
+
+    // SECURITY: Validate file size
+    if (!isValidFileSize(imageBytes)) {
+      throw Exception('File size exceeds maximum limit of ${maxFileSizeBytes ~/ (1024 * 1024)}MB');
+    }
+
     // Upload to storage
     await service.uploadImage(
       _bucketName,
@@ -61,11 +71,23 @@ class ImageUploadHelper {
     final service = supabaseService ?? SupabaseService();
     final imagePath = generateImagePath();
 
+    final bytes = Uint8List.fromList(imageBytes);
+
+    // SECURITY: Validate image using magic bytes
+    if (!isValidImageFile(bytes)) {
+      throw Exception('Invalid image file. Only PNG, JPEG, GIF, WebP, and BMP are allowed.');
+    }
+
+    // SECURITY: Validate file size
+    if (!isValidFileSize(bytes)) {
+      throw Exception('File size exceeds maximum limit of ${maxFileSizeBytes ~/ (1024 * 1024)}MB');
+    }
+
     // Upload to storage
     await service.uploadImage(
       _bucketName,
       imagePath,
-      Uint8List.fromList(imageBytes),
+      bytes,
     );
 
     // Get public URL
@@ -91,9 +113,57 @@ class ImageUploadHelper {
     return imageUrl.split('/').last.split('?').first;
   }
 
-  /// Validates if a file is an image based on extension
+  /// Validates if a file is a valid image using magic bytes (file signature)
+  ///
+  /// This is more secure than extension-only validation
+  /// Returns true if the file has a valid image signature
+  static bool isValidImageFile(Uint8List bytes) {
+    if (bytes.length < 4) return false;
+
+    // PNG: 89 50 4E 47
+    if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+      return true;
+    }
+
+    // JPEG: FF D8 FF
+    if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) {
+      return true;
+    }
+
+    // GIF: 47 49 46
+    if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
+      return true;
+    }
+
+    // WebP: 52 49 46 46 (RIFF)
+    if (bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46) {
+      // Check for WEBP signature at offset 8
+      if (bytes.length > 11 && bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
+        return true;
+      }
+    }
+
+    // BMP: 42 4D
+    if (bytes[0] == 0x42 && bytes[1] == 0x4D) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /// Validates file size
+  ///
+  /// Returns true if file size is within acceptable limits (5MB)
+  static const int maxFileSizeBytes = 5 * 1024 * 1024; // 5MB
+
+  static bool isValidFileSize(Uint8List bytes) {
+    return bytes.length <= maxFileSizeBytes;
+  }
+
+  /// Validates if a file is an image based on extension (fallback)
   ///
   /// Returns true if the file has a valid image extension
+  /// NOTE: This is less secure than magic byte validation
   static bool isValidImageExtension(String path) {
     final validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
     final extension = path.split('.').last.toLowerCase();
