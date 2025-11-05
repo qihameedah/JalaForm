@@ -21,5 +21,6 @@ class SupabaseConstants {
   static const String prefsRefreshToken = 'refresh_token';
   static const String prefsExpiresAt = 'expires_at';
   static const String prefsSavedEmail = 'savedEmail';
-  static const String prefsSavedPassword = 'savedPassword';
+  // SECURITY: Never store passwords in SharedPreferences
+  // Removed: prefsSavedPassword (security vulnerability)
 }

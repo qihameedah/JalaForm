@@ -52,16 +52,14 @@ class _MobileAuthScreenState extends State<MobileAuthScreen> {
   Future<void> _checkSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     final savedEmail = prefs.getString('savedEmail');
-    final savedPassword = prefs.getString('savedPassword');
 
-    if (savedEmail != null && savedPassword != null) {
+    // Only restore email, never store passwords
+    if (savedEmail != null) {
       if (mounted) {
         setState(() {
           _emailController.text = savedEmail;
-          _passwordController.text = savedPassword;
           _rememberMe = true;
         });
-        _signIn(autoLogin: true);
       }
     }
   }
@@ -93,12 +91,13 @@ class _MobileAuthScreenState extends State<MobileAuthScreen> {
       if (user != null) {
         final prefs = await SharedPreferences.getInstance();
         if (_rememberMe) {
+          // Only save email, never store passwords
           await prefs.setString('savedEmail', _emailController.text.trim());
-          await prefs.setString('savedPassword', _passwordController.text);
         } else {
           await prefs.remove('savedEmail');
-          await prefs.remove('savedPassword');
         }
+        // Clean up any old saved passwords from previous versions
+        await prefs.remove('savedPassword');
 
         if (mounted) {
           Navigator.of(context).pushReplacement(
@@ -399,6 +398,7 @@ class _LoginFormCard extends StatelessWidget {
                   border: const OutlineInputBorder(),
                 ),
                 obscureText: !passwordVisible,
+                onFieldSubmitted: (_) => onSignIn(),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password';

@@ -10,6 +10,7 @@ import 'package:jala_form/core/theme/app_theme.dart';
 import 'package:jala_form/features/forms/models/custom_form.dart';
 import 'package:jala_form/features/forms/models/form_field.dart';
 import 'package:jala_form/features/forms/models/form_response.dart';
+import 'package:jala_form/features/web/models/likert_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:universal_html/html.dart' as html;
@@ -30,13 +31,6 @@ class WebFormSubmissionScreen extends StatefulWidget {
   @override
   State<WebFormSubmissionScreen> createState() =>
       _WebFormSubmissionScreenState();
-}
-
-class LikertOption {
-  final String label;
-  final String value;
-
-  LikertOption({required this.label, required this.value});
 }
 
 class _WebFormSubmissionScreenState extends State<WebFormSubmissionScreen> {
@@ -367,7 +361,6 @@ class _WebFormSubmissionScreenState extends State<WebFormSubmissionScreen> {
         await _supabaseService.deleteDraftResponse(widget.form.id);
 
         if (mounted) {
-          _timer?.cancel();
           final periodDesc =
               _supabaseService.getRecurrencePeriodDescription(widget.form);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -402,6 +395,9 @@ class _WebFormSubmissionScreenState extends State<WebFormSubmissionScreen> {
         );
       }
     } finally {
+      // Always cancel timer if it exists (for checklists)
+      _timer?.cancel();
+
       if (mounted && !_formSubmitted) {
         setState(() {
           _isSubmitting = false;
