@@ -404,7 +404,7 @@ class PdfService {
 
                     // Form title with proper Arabic rendering
                     _createArabicText(
-                      text: form.title ?? 'نموذج بلا عنوان',
+                      text: form.title,
                       style: pw.TextStyle(
                         fontSize: 22,
                         color: PdfColors.white,
@@ -436,8 +436,7 @@ class PdfService {
                       iconColor: PdfColors.green600,
                       labelEn: 'Submission Date',
                       labelAr: 'تاريخ الإرسال',
-                      value:
-                          _formatDate(response.submitted_at ?? DateTime.now()),
+                      value: _formatDate(response.submitted_at),
                     ),
 
                     pw.SizedBox(height: 16),
@@ -448,9 +447,9 @@ class PdfService {
                       iconColor: PdfColors.blue600,
                       labelEn: 'Response ID',
                       labelAr: 'معرف الاستجابة',
-                      value: (response.id ?? 'N/A').length > 12
+                      value: response.id.length > 12
                           ? '${response.id.substring(0, 12)}...'
-                          : response.id ?? 'N/A',
+                          : response.id,
                     ),
                   ],
                 ),

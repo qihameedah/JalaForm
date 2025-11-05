@@ -18,32 +18,17 @@ import 'package:excel/excel.dart' hide Border;
 import '../web_form_submission_screen.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
+// Import shared Likert models
+import 'package:jala_form/shared/models/likert/likert_option.dart';
+import 'package:jala_form/shared/models/likert/likert_display_data.dart';
+import 'package:jala_form/shared/utils/likert_parser.dart';
+
 
 class WebDashboard extends StatefulWidget {
   const WebDashboard({super.key});
 
   @override
   State<WebDashboard> createState() => _WebDashboardState();
-}
-
-// Add these helper classes at the top of your web_dashboard.dart file
-class LikertOption {
-  final String label;
-  final String value;
-
-  LikertOption({required this.label, required this.value});
-}
-
-class LikertDisplayData {
-  final List<String> questions;
-  final List<LikertOption> options;
-  final Map<String, String> responses;
-
-  LikertDisplayData({
-    required this.questions,
-    required this.options,
-    required this.responses,
-  });
 }
 
 class _WebDashboardState extends State<WebDashboard>
@@ -122,20 +107,9 @@ class _WebDashboardState extends State<WebDashboard>
         final myForms =
             forms.where((form) => form.created_by == user.id).toList();
 
-        // Initialize response map with explicit typing
-        final Map<String, List<FormResponse>> responseMap =
-            <String, List<FormResponse>>{};
-
-        // Load responses for each form with individual error handling
-        for (var form in myForms) {
-          try {
-            final responses = await _supabaseService.getFormResponses(form.id);
-            responseMap[form.id] = responses;
-          } catch (e) {
-            debugPrint('Error loading responses for form ${form.id}: $e');
-            responseMap[form.id] = <FormResponse>[];
-          }
-        }
+        // Batch fetch responses for all forms at once (eliminates N+1 query pattern)
+        final formIds = myForms.map((form) => form.id).toList();
+        final responseMap = await _supabaseService.getFormResponsesBatch(formIds);
 
         if (mounted) {
           setState(() {
@@ -4099,59 +4073,8 @@ class _WebDashboardState extends State<WebDashboard>
 
   LikertDisplayData _parseLikertDisplayData(
       FormFieldModel field, Map<dynamic, dynamic> responseMap) {
-    // Convert response map to proper types
-    final Map<String, String> responses = {};
-    responseMap.forEach((key, value) {
-      responses[key.toString()] = value.toString();
-    });
-
-    // Get questions
-    final questions = field.likertQuestions ?? [];
-
-    // Parse options - same logic as in submission screen
-    List<LikertOption> options = [];
-
-    if (field.options != null && field.options!.isNotEmpty) {
-      options = field.options!.map((option) {
-        if (option.contains('|')) {
-          final parts = option.split('|');
-          return LikertOption(
-            label: parts[0].trim(),
-            value: parts.length > 1 ? parts[1].trim() : parts[0].trim(),
-          );
-        } else {
-          return LikertOption(label: option, value: option);
-        }
-      }).toList();
-    } else {
-      // Fallback to default scale
-      final scale = field.likertScale ?? 5;
-      final startLabel = field.likertStartLabel ?? 'Strongly Disagree';
-      final endLabel = field.likertEndLabel ?? 'Strongly Agree';
-      final middleLabel = field.likertMiddleLabel;
-
-      for (int i = 1; i <= scale; i++) {
-        String label;
-        if (i == 1) {
-          label = startLabel;
-        } else if (i == scale) {
-          label = endLabel;
-        } else if (i == ((scale + 1) ~/ 2) &&
-            middleLabel != null &&
-            middleLabel.isNotEmpty) {
-          label = middleLabel;
-        } else {
-          label = i.toString();
-        }
-        options.add(LikertOption(label: label, value: 'scale_$i'));
-      }
-    }
-
-    return LikertDisplayData(
-      questions: questions,
-      options: options,
-      responses: responses,
-    );
+    // Use shared utility for parsing Likert display data
+    return LikertParser.parseLikertDisplayData(field, responseMap);
   }
 
 // Improved response details dialog with better responsiveness

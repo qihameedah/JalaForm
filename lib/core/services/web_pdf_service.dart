@@ -339,7 +339,7 @@ class WebPdfService {
       // Generate PDF bytes and download
       final pdfBytes = await pdf.save();
       await _downloadPdfInBrowser(
-          pdfBytes, form.title ?? 'Form', response.id ?? 'unknown');
+          pdfBytes, form.title, response.id);
 
       debugPrint('Web PDF generated and download initiated successfully');
     } catch (e) {
